@@ -1,0 +1,19 @@
+{
+    "name": "node_my_mall",
+    "version": "1.0.0",
+    "description": "node 숙련 주차 개인과제",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "prettify": "prettier --write *.js **/*.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "prettier": "^3.1.0"
+    },
+    "dependencies": {
+        "nodemon": "^3.0.1"
+    }
+}
