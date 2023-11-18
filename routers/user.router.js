@@ -1,14 +1,11 @@
-//회원가입 API
-//이메일, 비번, 비번확인, 이름 넘겨서 회원가입 요청 (비번은 hash된 값을 저장)
-//유효성 체크(이메일중복불가, 형식에 맞아야함. 비번최소6자 이상, 확인과 일치)
-//회원가입 성공시 비번 제외 사용자 정보 반환.
-
 const express = require('express');
 const router = express.Router();
 
 const { Users } = require('../models');
 const db = require('../config/config');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 //회원가입 API
 router.post('/users', async (req, res) => {
     const { email, password, confirmPassword, name } = req.body;
@@ -54,13 +51,48 @@ router.post('/users', async (req, res) => {
 
     //전부 만족 시 회원가입(비번은 hash해서 저장)
     const hash = await bcrypt.hash(password, 10);
-    const user = Users.create({ email, password: hash, name });
-    const results = {};
+    const user = await Users.create({ email, password: hash, name });
+    const me = await Users.findOne({
+        attributes: ['userId', 'email', 'name', 'createdAt', 'updatedAt'],
+        where: { email },
+    });
     res.status(201).json({
         success: true,
         message: '회원가입에 성공했습니다.',
-        data: { results },
+        data: me,
     });
+});
+
+//로그인 API
+router.post('/auth', async (req, res) => {
+    const { email, password } = req.body;
+    //email과 일치하는 유저 찾기
+    const user = await Users.findOne({ where: { email } });
+    //email에 해당하는 유저 없으면 오류
+    if (!user) {
+        res.status(400).json({
+            errorMessage: '이메일 또는 패스워드가 틀렸습니다.',
+        });
+        return;
+    } else {
+        //이메일에 해당하는 유저가 있다면 비밀번호 비교
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            //비밀번호 틀리면 오류
+            res.status(400).json({
+                errorMessage: '이메일 또는 패스워드가 틀렸습니다.',
+            });
+            return;
+        } else {
+            //둘다 맞으면 jwt만들어주기
+            const token = jwt.sign(
+                { userId: user.userId },
+                'customized-secret-key',
+                { expiresIn: '12h' }
+            );
+            res.status(200).json({ token });
+        }
+    }
 });
 
 module.exports = router;
