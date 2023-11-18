@@ -90,7 +90,11 @@ router.post('/auth', async (req, res) => {
                 'customized-secret-key',
                 { expiresIn: '12h' }
             );
-            res.status(200).json({ token });
+            res.status(200).json({
+                success: true,
+                message: '로그인에 성공했습니다.',
+                token: token,
+            });
         }
     }
 });
