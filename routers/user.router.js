@@ -99,13 +99,13 @@ router.post('/auth', async (req, res) => {
             });
         }
     }
+});
 
-    //내 정보 조회 API
-    const authMiddleware = require('../middlewares/auth.middleware');
-    router.get('/users/me', authMiddleware, async (req, res) => {
-        const me = res.locals.user;
-        res.status(200).json({ me });
-    });
+//내 정보 조회 API
+const authMiddleware = require('../middlewares/auth.middleware');
+router.get('/users/me', authMiddleware, async (req, res) => {
+    const me = res.locals.user;
+    res.status(200).json({ me });
 });
 
 module.exports = router;
