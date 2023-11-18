@@ -5,6 +5,7 @@ const { Users } = require('../models');
 const db = require('../config/config');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
 //회원가입 API
 router.post('/users', async (req, res) => {
@@ -90,6 +91,7 @@ router.post('/auth', async (req, res) => {
                 'customized-secret-key',
                 { expiresIn: '12h' }
             );
+            res.cookie('accessToken', `Bearer ${token}`);
             res.status(200).json({
                 success: true,
                 message: '로그인에 성공했습니다.',
@@ -97,6 +99,13 @@ router.post('/auth', async (req, res) => {
             });
         }
     }
+
+    //내 정보 조회 API
+    const authMiddleware = require('../middlewares/auth.middleware');
+    router.get('/users/me', authMiddleware, async (req, res) => {
+        const me = res.locals.user;
+        res.status(200).json({ me });
+    });
 });
 
 module.exports = router;

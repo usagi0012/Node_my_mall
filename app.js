@@ -1,9 +1,11 @@
 const express = require('express');
 const port = 3003;
 const usersRouter = require('./routers/user.router');
+const cookieParser = require('cookie-parser');
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 app.use('/api', [usersRouter]);
 
 app.get('/', (req, res) => {

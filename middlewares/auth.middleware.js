@@ -4,14 +4,22 @@ const { Users } = require('../models');
 
 module.exports = async (req, res, next) => {
     //jwt토큰가져오기
-    const { authorization } = req.cookies;
-    //토큰의 타입과 값을 배열 구조분해 할당으로 나눠줌
-    const [authType, authToken] = (authorization ?? '').split(' ');
+    const { accessToken, refreshToken } = req.cookies;
+    //토큰의 타입과 값 나누기
+    const [authType, authToken] = (accessToken ?? '').split(' ');
 
-    //토큰이 비었을때(값이 없을 때) 또는 토큰 타입이 bearer가 아닐때
-    if (!authToken || authType !== 'Bearer') {
+    //토큰이 비었을때(만료되었거나 값이 없을 때)
+    if (!authToken) {
         res.status(401).send({
             errorMessage: '로그인 후 이용 가능한 기능입니다.',
+        });
+        return;
+    }
+
+    //토큰 타입이 bearer가 아닐때
+    if (!authToken || authType !== 'Bearer') {
+        res.status(401).send({
+            errorMessage: '인증 형태가 표준과 일치하지 않습니다.',
         });
         return;
     }
@@ -20,13 +28,17 @@ module.exports = async (req, res, next) => {
         //복호화 및 검증
         const { userId } = jwt.verify(authToken, 'customized-secret-key');
         //통과시 유저 정보 찾기
-        const user = await Users.findOne({ where: { userId } });
+        const user = await Users.findOne({
+            attributes: ['userId', 'email', 'name', 'createdAt', 'updatedAt'],
+            where: { userId },
+        });
         //찾은 유저 정보 저장
         res.locals.user = user;
         next();
     } catch (err) {
-        res.status(401).send({
-            errorMessage: '로그인 후 이용 가능한 기능입니다.',
+        //JWT 검증(JWT Secret 불일치, 데이터 조작으로 인한 Signature 불일치)에 실패한 경우
+        res.status(403).send({
+            errorMessage: '인증에 실패하였습니다.',
         });
     }
 };
