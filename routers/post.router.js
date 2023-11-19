@@ -62,15 +62,15 @@ router.put('/posts/:postId', authMiddleware, async (req, res) => {
     const { postId } = req.params;
     const userId = res.locals.user.userId;
     const { title, content, status } = req.body;
-    const updateProduct = await Posts.findOne({ where: { postId } });
+    const updatePost = await Posts.findOne({ where: { postId } });
 
     //상품이 있는지 조회
-    if (!updateProduct) {
+    if (!updatePost) {
         return res.status(404).json({ Message: '상품 조회에 실패하였습니다.' });
     }
 
     //있으면 본인이 등록한 상품인지 확인
-    if (updateProduct.userId !== userId) {
+    if (updatePost.userId !== userId) {
         return res
             .status(401)
             .json({ Message: '상품을 수정할 권한이 존재하지 않습니다.' });
@@ -86,6 +86,29 @@ router.put('/posts/:postId', authMiddleware, async (req, res) => {
         { where: { postId } }
     );
     res.status(200).json({ Message: '상품정보를 수정하였습니다.' });
+});
+
+//상품 삭제 API
+router.delete('/posts/:postId', authMiddleware, async (req, res) => {
+    const { postId } = req.params;
+    const userId = res.locals.user.userId;
+    const deletePost = await Posts.findOne({ where: { postId } });
+
+    //상품이 있는지 조회
+    if (!deletePost) {
+        return res.status(404).json({ Message: '상품 조회에 실패하였습니다.' });
+    }
+
+    //있으면 본인이 등록한 상품인지 확인
+    if (deletePost.userId !== userId) {
+        return res
+            .status(401)
+            .json({ Message: '상품을 삭제할 권한이 존재하지 않습니다.' });
+    }
+
+    //인증되었으면 상품 삭제
+    await Posts.destroy({ where: { postId } });
+    res.status(200).json({ Message: '상품을 삭제하였습니다.' });
 });
 
 module.exports = router;
