@@ -37,9 +37,8 @@ module.exports = async (req, res, next) => {
         res.locals.user = user;
         next();
     } catch (err) {
-        //JWT 검증(JWT Secret 불일치, 데이터 조작으로 인한 Signature 불일치)에 실패한 경우
         res.status(403).send({
-            errorMessage: '인증에 실패하였습니다.',
+            errorMessage: '로그인이 필요합니다.',
         });
     }
 };
