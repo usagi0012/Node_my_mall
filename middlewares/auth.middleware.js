@@ -1,6 +1,7 @@
 //인증 미들웨어
 const jwt = require('jsonwebtoken');
 const { Users } = require('../models');
+require('dotenv').config();
 
 module.exports = async (req, res, next) => {
     //jwt토큰가져오기
@@ -26,7 +27,7 @@ module.exports = async (req, res, next) => {
 
     try {
         //복호화 및 검증
-        const { userId } = jwt.verify(authToken, 'customized-secret-key');
+        const { userId } = jwt.verify(authToken, process.env.MYSQL_TOKEN_KEY);
         //통과시 유저 정보 찾기
         const user = await Users.findOne({
             attributes: ['userId', 'email', 'name', 'createdAt', 'updatedAt'],

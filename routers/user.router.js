@@ -5,7 +5,7 @@ const { Users } = require('../models');
 const db = require('../config/config');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 //회원가입 API
 router.post('/users', async (req, res) => {
@@ -88,7 +88,7 @@ router.post('/auth', async (req, res) => {
             //둘다 맞으면 jwt만들어주기
             const token = jwt.sign(
                 { userId: user.userId },
-                'customized-secret-key',
+                process.env.MYSQL_TOKEN_KEY,
                 { expiresIn: '12h' }
             );
             res.cookie('accessToken', `Bearer ${token}`);
