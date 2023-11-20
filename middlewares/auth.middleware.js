@@ -37,7 +37,7 @@ module.exports = async (req, res, next) => {
         res.locals.user = user;
         next();
     } catch (err) {
-        res.status(403).send({
+        res.status(401).send({
             errorMessage: '로그인이 필요합니다.',
         });
     }
