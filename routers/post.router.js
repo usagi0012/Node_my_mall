@@ -113,21 +113,41 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
 });
 
 //상품 목록 조회 API
-router.get('/posts', async (req, res) => {
-    //최근에 수정된(업데이트된)순으로 정렬해서 조회하도록 함
-    const posts = await Posts.findAll({
-        attributes: [
-            'postId',
-            'title',
-            'content',
-            'userId',
-            'status',
-            'createdAt',
-            'updatedAt',
-        ],
-        order: [['updatedAt', 'desc']],
-    });
-    res.status(200).json({ posts });
+router.get('/posts//:sort', async (req, res) => {
+    const { sort } = req.params;
+    console.log(sort);
+
+    //asc면 과거순 정렬
+    if (sort == 'ASC') {
+        const posts = await Posts.findAll({
+            attributes: [
+                'postId',
+                'title',
+                'content',
+                'userId',
+                'status',
+                'createdAt',
+                'updatedAt',
+            ],
+            order: [['createdAt', 'asc']],
+        });
+        return res.status(200).json({ posts });
+    } else {
+        //나머지 경우에는 전부 최신순
+        const posts = await Posts.findAll({
+            attributes: [
+                'postId',
+                'title',
+                'content',
+                'userId',
+                'status',
+                'createdAt',
+                'updatedAt',
+            ],
+            order: [['createdAt', 'desc']],
+        });
+        return res.status(200).json({ posts });
+    }
 });
 
 //상품 상세 조회 API
