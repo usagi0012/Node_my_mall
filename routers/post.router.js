@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { Posts } = require('../models');
+const { Users } = require('../models');
 const db = require('../config/config');
 const jwt = require('jsonwebtoken');
 const authMiddleware = require('../middlewares/auth.middleware');
@@ -43,7 +44,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
         userId,
     });
 
-    const createdProduct = {
+    const createdPost = {
         title: post.title,
         content: post.content,
         status: post.status,
@@ -52,7 +53,7 @@ router.post('/posts', authMiddleware, async (req, res) => {
     };
 
     res.status(201).json({
-        product: createdProduct,
+        post: createdPost,
         message: '판매 상품을 등록하였습니다.',
     });
 });
@@ -127,6 +128,38 @@ router.get('/posts', async (req, res) => {
         order: [['updatedAt', 'desc']],
     });
     res.status(200).json({ posts });
+});
+
+//상품 상세 조회 API
+router.get('/posts/:postId', async (req, res) => {
+    const { postId } = req.params;
+
+    //사용자 테이블에서 작성자명 가져오기
+    const detailPost = await Posts.findOne({
+        include: [
+            {
+                model: Users,
+                attributes: ['name'],
+            },
+        ],
+        attributes: [
+            'postId',
+            'title',
+            'content',
+            'userId',
+            'status',
+            'createdAt',
+            'updatedAt',
+        ],
+        where: { postId },
+    });
+
+    //상품이 없을때
+    if (!detailPost) {
+        return res.status(404).json({ Message: '상품 조회에 실패하였습니다.' });
+    }
+
+    res.status(200).json({ detailPost });
 });
 
 module.exports = router;
